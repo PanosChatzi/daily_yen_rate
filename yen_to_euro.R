@@ -102,11 +102,21 @@ main <- function() {
   # Read the threshold from environment variable
   threshold <- as.numeric(Sys.getenv("PRICE_THRESHOLD"))
   
+  # Check if threshold is NA
+  if (is.na(threshold)) {
+    stop("PRICE_THRESHOLD environment variable is missing or not a valid number.")
+  }
+
   # Get current rate
   current_rate <- get_exchange_rate()
   
   # Get previous rate from log
   previous_rate <- get_previous_rate()
+
+  # Check if current_rate is NA
+  if (is.na(current_rate)) {
+    stop("Failed to retrieve a valid exchange rate.")
+  }
   
   # Write to log file for tracking
   timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
