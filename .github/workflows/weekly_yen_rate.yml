@@ -17,8 +17,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev \
-                            libpng-dev libpng16-dev libpng-tools \
-                            libjpeg-dev libjpeg62-turbo-dev libtiff5-dev
+                                  libpng-dev libpng-tools \
+                                  libjpeg-dev libtiff5-dev
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
