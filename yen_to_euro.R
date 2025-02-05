@@ -98,7 +98,6 @@ get_previous_rate <- function() {
 }
 
 # Main function
-# Main function
 main <- function() {
   message("Debug: Reading the threshold from environment variable")
   threshold <- as.numeric(Sys.getenv("PRICE_THRESHOLD"))
