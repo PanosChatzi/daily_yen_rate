@@ -98,33 +98,32 @@ get_previous_rate <- function() {
 }
 
 # Main function
+# Main function
 main <- function() {
-  # Read the threshold from environment variable
+  message("Debug: Reading the threshold from environment variable")
   threshold <- as.numeric(Sys.getenv("PRICE_THRESHOLD"))
   
-  # Check if threshold is NA
   if (is.na(threshold)) {
     stop("PRICE_THRESHOLD environment variable is missing or not a valid number.")
   }
 
-  # Get current rate
+  message("Debug: Getting current exchange rate")
   current_rate <- get_exchange_rate()
   
-  # Get previous rate from log
+  message("Debug: Getting previous exchange rate from log")
   previous_rate <- get_previous_rate()
 
-  # Check if current_rate is NA
   if (is.na(current_rate)) {
     stop("Failed to retrieve a valid exchange rate.")
   }
   
-  # Write to log file for tracking
+  message("Debug: Writing to log file")
   timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   log_entry <- sprintf("%s: Rate = %f\n", timestamp, current_rate)
   write(log_entry, "exchange_rate_log.txt", append = TRUE)
   
-  # Check if rate is below threshold
   if (current_rate < threshold) {
+    message("Debug: Sending email notification")
     send_notification(current_rate, previous_rate)
   }
 }
