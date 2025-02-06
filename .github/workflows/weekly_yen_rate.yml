@@ -2,41 +2,57 @@ name: Weekly JPY to EUR Rate Check
 
 on:
   schedule:
-    - cron: '0 0 * * 1'  # Runs every Monday at midnight UTC
-  workflow_dispatch:  # Allows manual triggering
+    # Runs every Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+  
+  # Allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
-  check-rate:
+  monitor-exchange-rate:
     runs-on: ubuntu-latest
+    
+    env:
+      EXCHANGE_API_KEY: ${{ secrets.EXCHANGE_API_KEY }}
+      SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+      PRICE_THRESHOLD: ${{ secrets.PRICE_THRESHOLD }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.2.0'
 
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
-
-      - name: Set up R
-        uses: r-lib/actions/setup-r@v2
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev
 
       - name: Cache R packages
         uses: actions/cache@v3
         with:
-          path: ~/.cache/R
-          key: r-packages-${{ runner.os }}-${{ hashFiles('**/DESCRIPTION') }}
-          restore-keys: r-packages-${{ runner.os }}-
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-r-${{ hashFiles('**/yen_to_euro.R') }}
+          restore-keys: ${{ runner.os }}-r-
 
       - name: Install R dependencies
         run: |
-          Rscript -e 'install.packages(c("httr", "jsonlite", "emayili"), dependencies=TRUE)'
+          install.packages(c('httr', 'jsonlite', 'emayili', 'dotenv'))
+        shell: Rscript {0}
 
-      - name: Run R script
-        env:
-          EXCHANGERATE_API_KEY: ${{ secrets.EXCHANGE_API_KEY }}
-          EMAIL_ADDRESS: ${{ secrets.SMTP_USER }}
-          EMAIL_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
-          PRICE_THRESHOLD: ${{ secrets.PRICE_THRESHOLD }}
+      - name: Run exchange rate monitor
         run: Rscript yen_to_euro.R
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: exchange-rate-logs
+          path: exchange_rate_log.txt

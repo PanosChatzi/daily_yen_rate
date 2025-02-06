@@ -2,48 +2,45 @@
 if (!requireNamespace("httr", quietly = TRUE)) install.packages("httr")
 if (!requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite")
 if (!requireNamespace("emayili", quietly = TRUE)) install.packages("emayili")
+if (!requireNamespace("dotenv", quietly = TRUE)) install.packages("dotenv")
 
 library(httr)
 library(jsonlite)
 library(emayili)
 
+# Load environment variables from the .env file
+dotenv::load_dot_env()
+
 # Function to get exchange rate with fallback APIs
+# Function to get exchange rate with new API
 get_exchange_rate <- function() {
-  # List of APIs to try
-  apis <- list(
-    list(
-      url = "https://api.exchangerate-api.com/v4/latest/JPY",
-      path = c("rates", "EUR")
-    ),
-    list(
-      url = "https://api.exchangerate.host/latest?base=JPY&symbols=EUR",
-      path = c("rates", "EUR")
-    )
-  )
+  # Get API key from environment variable
+  api_key <- Sys.getenv("EXCHANGE_API_KEY")
   
-  for (api in apis) {
-    tryCatch({
-      # Make the request
-      response <- GET(api$url)
+  # Construct the API URL
+  url <- paste0("https://v6.exchangerate-api.com/v6/", api_key, "/pair/JPY/EUR")
+  
+  tryCatch({
+    # Make the request
+    response <- GET(url)
+    
+    # Check if request was successful
+    if (status_code(response) == 200) {
+      # Parse response
+      data <- fromJSON(rawToChar(response$content))
       
-      # Check if request was successful
-      if (status_code(response) == 200) {
-        # Parse response
-        data <- fromJSON(rawToChar(response$content))
-        
-        # Extract rate using the appropriate path
-        rate <- data[[api$path[1]]][[api$path[2]]]
-        
-        if (!is.null(rate)) {
-          return(rate)
-        }
+      # Extract conversion rate
+      if (!is.null(data$conversion_rate)) {
+        return(data$conversion_rate)
       }
-    }, error = function(e) {
-      warning(paste("Error with", api$url, ":", e$message))
-    })
-  }
+    } else {
+      warning(paste("API request failed with status code:", status_code(response)))
+    }
+  }, error = function(e) {
+    warning(paste("Error with ExchangeRate-API:", e$message))
+  })
   
-  stop("Could not get exchange rate from any API endpoint")
+  stop("Could not get exchange rate from ExchangeRate-API")
 }
 
 # Function to send email
