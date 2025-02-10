@@ -33,7 +33,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev libssl-dev
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libpng-dev libjpeg-dev libtiff5-dev
 
       - name: Cache R packages
         uses: actions/cache@v3
@@ -42,9 +42,14 @@ jobs:
           key: ${{ runner.os }}-r-${{ hashFiles('**/yen_to_euro.R') }}
           restore-keys: ${{ runner.os }}-r-
 
+      - name: Clean cached R packages (Remove dotenv)
+        run: |
+          Rscript -e 'if ("dotenv" %in% installed.packages()) remove.packages("dotenv")'
+        shell: Rscript {0}
+
       - name: Install R dependencies
         run: |
-          install.packages(c('httr', 'jsonlite', 'emayili', 'dotenv'))
+          Rscript -e 'install.packages(c("httr", "jsonlite", "emayili"), dependencies=TRUE)'
         shell: Rscript {0}
 
       - name: Run exchange rate monitor

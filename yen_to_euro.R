@@ -8,10 +8,16 @@ library(httr)
 library(jsonlite)
 library(emayili)
 
-# Enhanced logging function
+# Logging function
 log_message <- function(message, type = "INFO") {
   timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   log_entry <- sprintf("[%s] %s: %s\n", type, timestamp, message)
+  
+  # Ensure log file exists before writing
+  if (!file.exists("exchange_rate_log.txt")) {
+    file.create("exchange_rate_log.txt")
+  }
+  
   write(log_entry, "exchange_rate_log.txt", append = TRUE)
 }
 
