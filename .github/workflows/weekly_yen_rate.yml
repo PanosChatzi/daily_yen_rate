@@ -44,14 +44,12 @@ jobs:
 
       - name: Clean cached R packages (Remove dotenv)
         run: |
-          Rscript -e 'if ("dotenv" %in% rownames(installed.packages())) remove.packages("dotenv")'
+          Rscript -e "if ('dotenv' %in% rownames(installed.packages())) remove.packages('dotenv')"
           Rscript -e 'unlink("~/.cache/R", recursive = TRUE, force = TRUE)'  # Clears package cache
-        shell: Rscript {0}
 
       - name: Install R dependencies
         run: |
           Rscript -e 'install.packages(c("httr", "jsonlite", "emayili"), dependencies=TRUE)'
-        shell: Rscript {0}
 
       - name: Run exchange rate monitor
         run: Rscript yen_to_euro.R
