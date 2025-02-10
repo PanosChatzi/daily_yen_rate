@@ -3,7 +3,6 @@
 if (!requireNamespace("httr", quietly = TRUE)) install.packages("httr")
 if (!requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite")
 if (!requireNamespace("emayili", quietly = TRUE)) install.packages("emayili")
-if (!requireNamespace("dotenv", quietly = TRUE)) install.packages("dotenv")
 
 library(httr)
 library(jsonlite)
